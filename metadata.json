@@ -1,0 +1,46 @@
+{
+  "slug": "order-total-reconciliation-agent",
+  "title": "Order Total Reconciliation Agent",
+  "category": "Commerce Operations",
+  "description": "Reconciles order line extensions, discount, tax, and payable total using integer minor currency units.",
+  "decision": "An order reconciles when line extensions and the declared discount and tax produce the stated total exactly.",
+  "inputs": "The caller supplies a currency code, unique line identifiers, unit prices and quantities in minor units, discount, tax, and total in the same currency.",
+  "limitations": "This is arithmetic validation only. It does not determine tax law, refund eligibility, payment settlement, or whether a price is commercially correct.",
+  "good": {
+    "currency": "USD",
+    "items": [
+      {
+        "id": "line-1",
+        "unit_minor": 1250,
+        "quantity": 2
+      },
+      {
+        "id": "line-2",
+        "unit_minor": 500,
+        "quantity": 1
+      }
+    ],
+    "discount_minor": 100,
+    "tax_minor": 190,
+    "total_minor": 3090
+  },
+  "bad": {
+    "currency": "USD",
+    "items": [
+      {
+        "id": "line-1",
+        "unit_minor": 1250,
+        "quantity": 2
+      }
+    ],
+    "discount_minor": 100,
+    "tax_minor": 190,
+    "total_minor": 2000
+  },
+  "body": "\n        items = payload.get(\"items\"); currency = payload.get(\"currency\")\n        if not isinstance(currency, str) or len(currency) != 3 or not currency.isalpha(): raise ValueError(\"three-letter currency is required\")\n        if not isinstance(items, list) or not items: raise ValueError(\"items must be a non-empty list\")\n        ids=set(); subtotal=0\n        for item in items:\n            if not isinstance(item, dict): raise ValueError(\"each item must be an object\")\n            if not isinstance(item.get(\"id\"), str) or not item[\"id\"] or item[\"id\"] in ids: findings.append(\"line identifiers must be unique and non-empty\")\n            ids.add(item.get(\"id\")); unit=_num(item.get(\"unit_minor\"), \"unit_minor\", findings); qty=_num(item.get(\"quantity\"), \"quantity\", findings)\n            if int(unit)!=unit or int(qty)!=qty or unit<0 or qty<=0: findings.append(\"unit price and quantity must be nonnegative integer minor units; quantity must be positive\")\n            subtotal += int(unit)*int(qty)\n        discount=_num(payload.get(\"discount_minor\"), \"discount_minor\", findings); tax=_num(payload.get(\"tax_minor\"), \"tax_minor\", findings); total=_num(payload.get(\"total_minor\"), \"total_minor\", findings)\n        if any(int(x)!=x or x<0 for x in (discount,tax,total)): findings.append(\"discount, tax, and total must be nonnegative integer minor units\")\n        if discount>subtotal: findings.append(\"discount exceeds subtotal\")\n        if subtotal-int(discount)+int(tax) != int(total): findings.append(f\"total mismatch expected={subtotal-int(discount)+int(tax)} actual={int(total)}\")\n        ",
+  "runtime": "Python 3.9+ standard library",
+  "input_schema": {
+    "type": "object",
+    "description": "The caller supplies a currency code, unique line identifiers, unit prices and quantities in minor units, discount, tax, and total in the same currency."
+  }
+}

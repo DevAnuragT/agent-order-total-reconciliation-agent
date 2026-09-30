@@ -1,0 +1,18 @@
+{
+  "currency": "USD",
+  "items": [
+    {
+      "id": "line-1",
+      "unit_minor": 1250,
+      "quantity": 2
+    },
+    {
+      "id": "line-2",
+      "unit_minor": 500,
+      "quantity": 1
+    }
+  ],
+  "discount_minor": 100,
+  "tax_minor": 190,
+  "total_minor": 3090
+}

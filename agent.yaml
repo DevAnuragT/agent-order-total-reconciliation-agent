@@ -1,0 +1,11 @@
+spec_version: "0.1.0"
+name: order-total-reconciliation-agent
+version: 0.1.0
+description: "Reconciles order line extensions, discount, tax, and payable total using integer minor currency units."
+skills:
+  - order-total-reconciliation-agent-skill
+tools:
+  - audit-order-total-reconciliation-agent
+tags:
+  - "commerce-operations"
+  - evidence-driven
